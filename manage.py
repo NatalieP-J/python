@@ -119,6 +119,6 @@ def WriteFile7Cols(values,fname):
 
 def WriteFile8Cols(values,fname):
     with open(fname,"w") as data:
-        for i in range(len(values)
+        for i in range(len(values)):
             data.write("{0} {1} {2} {3} {4} {5} {6} {7}\n".format(values[i][0],values[i][1],values[i][2],values[i][3],values[i][4],values[i][5],values[i][6],values[i][7]))
 
