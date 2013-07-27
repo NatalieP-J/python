@@ -3,26 +3,6 @@ from astropy.time import Time
 import numpy as np
 import argparse
 
-parser=argparse.ArgumentParser()
-
-#optional arguments to specifiy which nodes to loop over and the stamp (source)
-parser.add_argument('--tot', type=int,default=16, help="Total number of nodes")
-parser.add_argument('--min', type=int,default=17, help="Minimum node number")
-parser.add_argument('--sta', type=int,default=3,help='''Choose a source to evaluate a sequence file for - options are:
-0=.20130719053400
-1=.2013-07-19T05:36:00
-2=_voltage.all.test_2_july19
-3=_voltage.all.1810_2_july19
-4=.2013-07-24T01:50:00
-5=_split.2013-07-24T01:50:00.PSR1810
-6=_split.2013-07-24T01:50:00.PSR1919 ''')
-
-#parse command line
-args=parser.parse_args()
-min_node=args.min
-tot=args.tot
-source=args.sta
-
 #list stamp formats
 stamps=[]
 stamps.append('.20130719053400')
@@ -51,10 +31,26 @@ split_time_july25.append(['july25','PSR1810',2165400,2173440])
 split_time_july25.append(['july25','PSR1919',2173500,2174460])
 split_time_july25.append(['july25','PSR2111',2174580,2176200])
 
+no_split_time=[]
+
 #define the rate at which timestamps should appear
 nanoseconds=15.
 samples=2.**24
 rate=(nanoseconds/10**9)*samples
+
+parser=argparse.ArgumentParser()
+
+#optional arguments to specifiy which nodes to loop over and the stamp (source)
+parser.add_argument('--tot', type=int,default=16, help="Total number of nodes")
+parser.add_argument('--min', type=int,default=17, help="Minimum node number")
+parser.add_argument('--sta', type=int,default=3,help='''Choose a source to evaluate a sequence file for - run sequence_functions and type stamps for full list ''')
+
+#parse command line
+args=parser.parse_args()
+min_node=args.min
+tot=args.tot
+source=args.sta
+
 
 #Import times from timestamps and merges for a node across all disks
 #i goes from 0 to 4 because older files span 1-4 while newer ones span 0-3
@@ -462,3 +458,27 @@ def TimestampSplitter(min_node,tot,stamp_ID,time_split):
         fname = 'timestamp_split{1}.{2}.dat'.format(n,stamp_ID,sources[j])
         man.WriteFileCols8(write_time[j],fname)
     return split_mastertime
+
+def GenerateSequencing(min_node,tot,split,time_split,clock_fix,stamp_ID):
+    if split is True:
+        if clock_fix is True:
+            master = TimestampSplitter_ClockError(min_node,tot,stamp_ID,time_split)
+            for i in range(len(time_split)):
+                mastertime = master[i]
+                sequence = SequenceTimestamp(mastertime)
+                split_stamp_ID = '_split' + stamp_ID + time_split[i][1]
+                CreateSequenceFile(min_node,tot,sequence,split_stamp_ID)
+        else:
+            master = TimestampSplitter(min_node,tot,stamp_ID,time_split)
+            for i in range(len(time_split)):
+                mastertime = master[i]
+                sequence = SequenceTimestamp(mastertime)
+                split_stamp_ID = '_split' + stamp_ID + time_split[i][1]
+                CreateSequenceFile(min_node,tot,sequence,split_stamp_ID)
+    else:
+        master = Time_MergeNodes_SORT(min_node,tot,stamp_ID,clock_fix)
+        sequence = SequenceTimestamp(master)
+        CreateSequenceFile(min_node,tot,sequence,stamp_ID)
+
+
+
