@@ -133,46 +133,50 @@ def Time_MergeNodes_SORT(min_node,tot,stamp_ID,clock_fix):
         starter = CheckStartTimes(beginners)
         interval = starter[0]
         problem_node = starter[1]
-        if len(interval) != 0:
-            bump_val = sum(interval)/len(interval)
-        else:
-            bump_val = 0
-        n = min_node
-        counter =[]
-        while n < max_node:
-            m = n - min_node
-            total = problem_node.count(m)
-            if total == 1: 
-                pass
-            else:
-                print 'Clock error on node{0}.'.format(n)
-                counter.append(n)
-            n+=1
-        clock_errors = len(counter)
-        if clock_errors != 1:
-            print 'Multiple clock errors' 
-        prob = counter[0]
-        for i in range(len(masterlist)):
-            if masterlist[i][2] == prob:
-                masterlist[i][0] += bump_val
+        number_prob_nodes = []
+        node_prob = []
+        for i in range(len(interval)):
+            if np.around(interval[i],decimals=0) not in number_prob_nodes:
+                number_prob_nodes.append(interval[i])
+                node_prob.append(problem_node[i])
+        for j in range(len(number_prob_nodes)):
+            for i in range(len(interval)):
+                if interval[i] == number_prob_nodes[j]:
+                    bump_val = number_prob_nodes[j]
+                    n = min_node
+                    counter =[]
+                    while n < max_node:
+                        m = n - min_node
+                        total = node_prob.count(m)
+                        if total == 1: 
+                            pass
+                        else:
+                            print 'Clock error on node{0}.'.format(n)
+                            counter.append(n)
+                            n+=1
+                        prob = counter[0]
+                for k in range(len(masterlist)):
+                    if masterlist[k][2] == prob:
+                        masterlist[k][0] += bump_val
+    print '{0} clock errors'.format(len(number_prob_nodes))
     masterlist.sort()
     return masterlist
 
-##generate timestamps ~0.251 seconds apart
-##still doesn't quite do what I need
-#def GenTimestamps(time,interval,stamp_ID):
-    #""" Generate timestamps ~0.251 seconds apart"""
-    #fname = "gen_timestamp_{0}.dat".format(stamp_ID)
-    #start = time[0]
-    #year = time[0][0]
-    #month = time[0][1]
-    #end=time[len(time)]
-    #with open(fname,"w") as data:
-        #data.write("{0}\n".format(start))
-        #while i<= (end):
-            #data.write("{0}\n".format(i))
-            #print 'working {0}'.format(float(i)/end)
-            #i+=rate
+#generate timestamps ~0.251 seconds apart
+#still doesn't quite do what I need
+def GenTimestamps(time,interval,stamp_ID):
+    """ Generate timestamps ~0.251 seconds apart"""
+    fname = "gen_timestamp_{0}.dat".format(stamp_ID)
+    start = time[0]
+    year = time[0][0]
+    month = time[0][1]
+    end=time[len(time)]
+    with open(fname,"w") as data:
+        data.write("{0}\n".format(start))
+        while i<= (end):
+            data.write("{0}\n".format(i))
+            print 'working {0}'.format(float(i)/end)
+            i+=rate
 
 #checks that each file starts at the same time and identifies the nodes that
 #do not conform
