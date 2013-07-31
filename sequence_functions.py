@@ -164,17 +164,16 @@ def Time_MergeNodes_SORT(min_node,tot,stamp_ID,clock_fix):
 
 #generate timestamps ~0.251 seconds apart
 #still doesn't quite do what I need
-def GenTimestamps(time,interval,stamp_ID):
+def GenTimestamps(start,end,stamp_ID):
     """ Generate timestamps ~0.251 seconds apart"""
     fname = "gen_timestamp_{0}.dat".format(stamp_ID)
     nanoseconds=15.
     samples=2.**24
     rate=(nanoseconds/10**9)*samples
-    start = time[0]
-    end=time[len(time)]
     with open(fname,"w") as data:
         data.write("{0}\n".format(start))
-        while i<= (end):
+        i=0
+        while i<=end:
             data.write("{0}\n".format(i))
             print 'working {0}'.format(float(i)/end)
             i+=rate
