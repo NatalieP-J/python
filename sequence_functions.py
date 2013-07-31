@@ -168,8 +168,6 @@ def GenTimestamps(time,interval,stamp_ID):
     """ Generate timestamps ~0.251 seconds apart"""
     fname = "gen_timestamp_{0}.dat".format(stamp_ID)
     start = time[0]
-    year = time[0][0]
-    month = time[0][1]
     end=time[len(time)]
     with open(fname,"w") as data:
         data.write("{0}\n".format(start))
