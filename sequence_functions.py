@@ -1,7 +1,7 @@
 import manage as man
 from astropy.time import Time
 import numpy as np
-import argparse
+
 
 #list stamp formats
 stamps=[]
@@ -37,20 +37,20 @@ nanoseconds=15.
 samples=2.**24
 rate=(nanoseconds/10**9)*samples
 
-parser=argparse.ArgumentParser()
+#parser=argparse.ArgumentParser()
 
 #optional arguments to specifiy which nodes to loop over and the stamp (source)
-parser.add_argument('--tot', type=int,default=16, help="Total number of nodes")
-parser.add_argument('--min', type=int,default=17, help="Minimum node number")
-parser.add_argument('--sta', type=int,default=3,help='''Choose a source to evaluate a sequence file for - run sequence_functions and type stamps for full list ''')
+#parser.add_argument('--tot', type=int,default=16, help="Total number of nodes")
+#parser.add_argument('--min', type=int,default=17, help="Minimum node number")
+#parser.add_argument('--sta', type=int,default=3,help='''Choose a source to evaluate a sequence file for - run sequence_functions and type stamps for full list ''')
 
 #parse command line
-args=parser.parse_args()
-min_node=args.min
-tot=args.tot
-source=args.sta
+#args=parser.parse_args()
+#min_node=args.min
+#tot=args.tot
+#source=args.sta
 
-stamp = stamps[source]
+#stamp = stamps[source]
 
 
 #Import times from timestamps and merges for a node across all disks
@@ -166,7 +166,7 @@ def Time_MergeNodes_SORT(min_node,tot,stamp_ID,clock_fix):
 #still doesn't quite do what I need
 def GenTimestamps(start,end,stamp_ID):
     """ Generate timestamps ~0.251 seconds apart"""
-    fname = "gen_timestamp_{0}.dat".format(stamp_ID)
+    fname = "gentimestamp{0}.dat".format(stamp_ID)
     nanoseconds=15.
     samples=2.**24
     rate=(nanoseconds/10**9)*samples
@@ -175,7 +175,6 @@ def GenTimestamps(start,end,stamp_ID):
         i=0
         while i<=end:
             data.write("{0}\n".format(i))
-            print 'working {0}'.format(float(i)/end)
             i+=rate
 
 #checks that each file starts at the same time and identifies the nodes that
