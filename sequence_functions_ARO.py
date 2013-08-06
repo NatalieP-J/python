@@ -5,30 +5,7 @@ import numpy as np
 
 #list stamp formats
 stamps=[]
-stamps.append('.20130719053400')
-stamps.append('.2013-07-19T05:36:00')
-stamps.append('_voltage.all.test_2_july19')
-stamps.append('_voltage.all.1810_2_july19')
-stamps.append('.2013-07-24T01:50:00')
-stamps.append('_split.2013-07-24T01:50:00.PSR1810')
-stamps.append('_split.2013-07-24T01:50:00.PSR1919')
-stamps.append('.2013-07-25T01:30:00')
-stamps.append('_split.2013-07-25T01:30:00.PSR1810')
-stamps.append('_split.2013-07-25T01:30:00.PSR1919')
-stamps.append('_split.2013-07-25T01:30:00.PSR2111')
-stamps.append('.2013-07-27T01:26:00') #1810
-stamps.append('.2013-07-27T03:42:00') #1919
-stamps.append('.2013-07-27T03:56:00') #1957
-
-#for timestamps with multiple sources in a single file
-split_time_july24=[]
-split_time_july24.append(['july24','PSR1810',2080200,2087940])
-split_time_july24.append(['july24','PSR1919',2088000,2088600])
-
-split_time_july25=[]
-split_time_july25.append(['july25','PSR1810',2165400,2173440])
-split_time_july25.append(['july25','PSR1919',2173500,2174460])
-split_time_july25.append(['july25','PSR2111',2174580,2176200])
+stamps.append('.2013-07-26T18:31:14')
 
 no_split_time=[]
 
@@ -221,12 +198,17 @@ def SequenceTimestamp(masterlist):
                 or TimestampSplitter_ClockError 
                 or TimestampSplitter
     """
-    duplicates=[' ']*len(masterlist)
+    nanoseconds=15.
+    samples=2.**24
+    rate=(nanoseconds/10**9)*samples
+    num_entries = masterlist[len(masterlist)-1][0]-masterlist[0][0]
+    newlist=[' ']*num_entries
+    duplicates=[' ']*num_entries
     m=0  
     n=0
     stamp_number=[] 
     j=2 
-
+    k=0
     stamp_number.append(int(j)) 
     for i in range(len(masterlist)-1):
         interval=masterlist[i+1][0]-masterlist[i][0]
@@ -236,32 +218,38 @@ def SequenceTimestamp(masterlist):
 
         if np.around(interval,decimals=1) == 0:
             stamp_number.append(int(j))
+            newlist[k] = masterlist[i]
+            newlist[k+1] = masterlist[i+1]
 
-            if masterlist[i+1][2]==masterlist[i][2] and masterlist[i+1][1]!=masterlist[i][1]:
-                duplicates[i]='duplicate'
-                duplicates[i+1]='duplicate'
+            #this case only relevant for multiple nodes
+            #if masterlist[i+1][2]==masterlist[i][2] and masterlist[i+1][1]!=masterlist[i][1]:
+                #duplicates[i]='duplicate'
+                #duplicates[i+1]='duplicate'
             m+=1
 
         if np.around(interval,decimals=1) > 0:
             point=interval/rate
             point=np.around(point,decimals=0)
-            for k in point:
-                place_holder = [0,0,0,0]
-                stamp_number.append(-1)
+            newlist.append(masterlist[i])
+            if point > 1:
+                for f in range(point-2):
+                    place_holder = [0,0,0,0]
+                    newlist.append(place_holder)
+                    stamp_number.append(-1)
             j+=point
             stamp_number.append(int(j))
             n+=1
 
-    for i in range(len(masterlist)):
-        masterlist[i].append(stamp_number[i])
-        masterlist[i].append(duplicates[i])
+    for i in range(len(newlist)):
+        newlist[i].append(stamp_number[i])
+        newlist[i].append(duplicates[i])
 
     print '''Diagnostics
     \t Zero if statment was called {0} times
     \t Greater than rate if statement was called {1} times
     '''.format(int(m),int(n))
     
-    return masterlist
+    return newlist
 
 #write masterlist produced by SequenceTimestamp to the appropriate sequence 
 #files
