@@ -202,6 +202,7 @@ def SequenceTimestamp(masterlist):
     samples=2.**24
     rate=(nanoseconds/10**9)*samples
     num_entries = masterlist[len(masterlist)-1][0]-masterlist[0][0]
+    num_entries = np.around(num_entries,decimals=0)
     newlist=[' ']*num_entries
     duplicates=[' ']*num_entries
     m=0  
@@ -232,7 +233,7 @@ def SequenceTimestamp(masterlist):
             point=np.around(point,decimals=0)
             newlist.append(masterlist[i])
             if point > 1:
-                for f in range(point-2):
+                for f in range(int(point-2)):
                     place_holder = [0,0,0,0]
                     newlist.append(place_holder)
                     stamp_number.append(-1)
