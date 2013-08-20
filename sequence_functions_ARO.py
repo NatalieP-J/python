@@ -200,12 +200,12 @@ def SequenceTimestamp(masterlist):
     """
     nanoseconds=15.
     samples=2.**24
-    rate=(nanoseconds/10**9)*samples
+    rate=(nanoseconds/10**9)*samples #???
+    rate = 0.335
     num_entries = (masterlist[len(masterlist)-1][0]-masterlist[0][0])
     num_entries = num_entries/rate
     num_entries = int(num_entries)
     newlist=[' ']*num_entries
-    newlist=[]
     duplicates=[' ']*num_entries
     m=0  
     n=0
@@ -213,8 +213,7 @@ def SequenceTimestamp(masterlist):
     j=2 
     k=0
     stamp_number.append(int(j)) 
-    i=0
-    while i < (len(masterlist)-1):
+    for i in range(len(masterlist)-1):
         interval=masterlist[i+1][0]-masterlist[i][0]
 
         if interval < 0:
@@ -223,38 +222,36 @@ def SequenceTimestamp(masterlist):
         if np.around(interval,decimals=1) == 0:
             stamp_number.append(int(j))
             newlist[k] = masterlist[i]
-            newlist[k+1] = masterlist[i+1]
+            newlist[k+1] = masterlist[i]
             k+=2
-            #this case only relevant for multiple nodes
-            #if masterlist[i+1][2]==masterlist[i][2] and masterlist[i+1][1]!=masterlist[i][1]:
-                #duplicates[i]='duplicate'
-                #duplicates[i+1]='duplicate'
             m+=1
 
         if np.around(interval,decimals=1) > 0:
             point=interval/rate
             point=np.around(point,decimals=0)
             point=int(point)
-            newlist.append(masterlist[i])
+            newlist[k]=masterlist[i]
+            k+=1
             if point > 1:
                 for f in range(point-1):
-                    place_holder = [0,0,0,0]
+                    place_holder = ['N/A','N/A','N/A','N/A']
                     newlist[k] = place_holder
+                    k+=1
                     stamp_number.append(-1)
             j+=point
             stamp_number.append(int(j))
             n+=1
-            i+=1
-            k+=1
-    print newlist
-    print stamp_number
-    print newlist[0]
-    print len(newlist),len(stamp_number),len(masterlist), num_entries
+    newlist2=[]
     for i in range(len(newlist)):
-        print i
-        newlist[i].append(stamp_number[i])
-        newlist[i].append(duplicates[i])
-
+        if newlist[i]==' ':
+            print 'Empty space'
+            newlist2.append(['N/A','N/A','N/A','N/A',-1])
+        else:
+            newlist2.append(newlist[i])
+            newlist2[i].append(stamp_number[i])
+            newlist2[i].append(duplicates[i])
+    newlist=newlist2
+    
     print '''Diagnostics
     \t Zero if statment was called {0} times
     \t Greater than rate if statement was called {1} times
@@ -295,6 +292,32 @@ def CreateSequenceFile(min_node,tot,masterlist,stamp_ID):
         point=[masterlist[i][4],masterlist[i][1],masterlist[i][2],masterlist[i][5]]
         master.append(point)
     man.WriteFile4Cols(master,name)
+
+#write masterlist produced by SequenceTimestamp to the appropriate sequence 
+#files
+def CreateSequenceAROFile(min_node,tot,masterlist,stamp_ID):
+    """ Write a list of sequenced timestamps to appropriately named files.
+        Create a master sequence file.
+            min_node -- the smallest node number, an integer
+            tot -- the total number of nodes, an integer
+            masterlist -- a list whose elements look like 
+                [modified timestamp, disk number, node number, timestamp, 
+                sequence number, duplicate string]
+                Output of SequenceTimestamp
+            stamp_ID -- a string used to uniquely identify a file
+                    eg if the file name is timestamp.2013-07-25T01:30:00.1.dat,
+                    the stamp_ID is '.2013-07-25T01:30:00'
+    """
+    n=min_node
+    max_node = min_node + tot
+    while n < max_node:
+        name='node{0}/sequence{1}.mod.dat'.format(n,stamp_ID)
+        master=[]
+        for i in range(len(masterlist)):
+            point=[masterlist[i][4], masterlist[i][1]]
+            master.append(point)
+        man.WriteFileCols(master,name)
+        n+=1
 
 #Check differences between consecutive values in a list
 def Differences(values,index):
