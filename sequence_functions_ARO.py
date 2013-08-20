@@ -224,7 +224,6 @@ def SequenceTimestamp(masterlist):
             stamp_number.append(int(j))
             newlist[k] = masterlist[i]
             newlist[k+1] = masterlist[i+1]
-            i+=2
             k+=2
             #this case only relevant for multiple nodes
             #if masterlist[i+1][2]==masterlist[i][2] and masterlist[i+1][1]!=masterlist[i][1]:

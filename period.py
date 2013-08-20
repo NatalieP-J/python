@@ -10,7 +10,7 @@ import observability
 import sys
 
 def Period(current,start_time):
-    start=Time(start_time,format='iso',scale='utc').mjd
+    start=Time(start_time,format='mjd',scale='utc').mjd
     current=start+(float(current)/(60*60*24))
     eph1957 = ELL1Ephemeris('psrj1959.par')
     jpleph = JPLEphemeris(de405)
@@ -69,20 +69,24 @@ def Period(current,start_time):
     
     return period
 
+time=np.loadtxt("arrival_times_mjd.dat")
+start=time[0]
+end=time[-1]
+t=start
+newlist=[]
+i=0
 
-def Phase(time):
-    start=time[0]
-    end=time[-1]
-    newlist=[]
-    i=0
-    t=start
-    while t<end:
-        while i<len(time):
-            period=(Period(t,start)/(60*60*24))
-            if t<=time[i]<=t+period:
-                frac=(time[i]-t)/period
-                newlist.append(frac)
-                i+=1
-            else:
-                t+=period
-    return newlist
+while t<end:
+    while i<len(time):
+        period=(1000*Period(t,start))/(60*60*24)
+        if t<=time[i]<=t+period:
+            frac=(time[i]-t)/period
+            newlist.append(frac)
+            print 'increase fraction {0}'.format((time[i]-t)/t)
+            print time[i]
+            i+=1
+        else:
+            t+=period
+            print 'increment time'
+            print '{0} \t {1}'.format(t,time[i])
+    
