@@ -201,9 +201,11 @@ def SequenceTimestamp(masterlist):
     nanoseconds=15.
     samples=2.**24
     rate=(nanoseconds/10**9)*samples
-    num_entries = masterlist[len(masterlist)-1][0]-masterlist[0][0]
-    num_entries = np.around(num_entries,decimals=0)
+    num_entries = (masterlist[len(masterlist)-1][0]-masterlist[0][0])
+    num_entries = num_entries/rate
+    num_entries = int(num_entries)
     newlist=[' ']*num_entries
+    newlist=[]
     duplicates=[' ']*num_entries
     m=0  
     n=0
@@ -211,7 +213,8 @@ def SequenceTimestamp(masterlist):
     j=2 
     k=0
     stamp_number.append(int(j)) 
-    for i in range(len(masterlist)-1):
+    i=0
+    while i < (len(masterlist)-1):
         interval=masterlist[i+1][0]-masterlist[i][0]
 
         if interval < 0:
@@ -221,7 +224,8 @@ def SequenceTimestamp(masterlist):
             stamp_number.append(int(j))
             newlist[k] = masterlist[i]
             newlist[k+1] = masterlist[i+1]
-
+            i+=2
+            k+=2
             #this case only relevant for multiple nodes
             #if masterlist[i+1][2]==masterlist[i][2] and masterlist[i+1][1]!=masterlist[i][1]:
                 #duplicates[i]='duplicate'
@@ -231,17 +235,24 @@ def SequenceTimestamp(masterlist):
         if np.around(interval,decimals=1) > 0:
             point=interval/rate
             point=np.around(point,decimals=0)
+            point=int(point)
             newlist.append(masterlist[i])
             if point > 1:
-                for f in range(int(point-2)):
+                for f in range(point-1):
                     place_holder = [0,0,0,0]
-                    newlist.append(place_holder)
+                    newlist[k] = place_holder
                     stamp_number.append(-1)
             j+=point
             stamp_number.append(int(j))
             n+=1
-
+            i+=1
+            k+=1
+    print newlist
+    print stamp_number
+    print newlist[0]
+    print len(newlist),len(stamp_number),len(masterlist), num_entries
     for i in range(len(newlist)):
+        print i
         newlist[i].append(stamp_number[i])
         newlist[i].append(duplicates[i])
 
